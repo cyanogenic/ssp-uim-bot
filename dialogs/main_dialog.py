@@ -52,7 +52,16 @@ class MainDialog(ComponentDialog):
 
     async def exec_step(self, step_context: WaterfallStepContext) -> DialogTurnResult:
         choice = step_context.result
-        if choice == "4":
+        if   choice == "1":
+            await step_context.context.send_activity(MessageFactory.text("这里是套餐介绍"))
+        elif choice == "2":
+            await step_context.context.send_activity(MessageFactory.text("这里是使用教程"))
+        elif choice == "3":
+            await step_context.context.send_activity(MessageFactory.text("这里是软件下载"))
+        elif choice == "4":
             return await step_context.begin_dialog(ExpireDialog.__name__)
-        else:
-            return await step_context.end_dialog()
+        elif choice == "5":
+            await step_context.context.send_activity(MessageFactory.text("这里是人工服务"))
+
+        await step_context.context.send_activity(MessageFactory.text("会话已结束，感谢您的使用\n发送任意内容重新进入主菜单"))
+        return await step_context.end_dialog()

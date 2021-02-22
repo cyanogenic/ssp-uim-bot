@@ -1,3 +1,4 @@
+import re
 from botbuilder.dialogs import (
     ComponentDialog,
     WaterfallDialog,
@@ -46,7 +47,7 @@ class ExpireDialog(ComponentDialog):
         )
     
     async def query_step(self, step_context: WaterfallStepContext) -> DialogTurnResult:
-        email = step_context.result
+        email = re.findall(r'<a.*?>(.*?)</a>', step_context.result)[0]
         mydb = MyDB()
         sql_query = mydb.query("select expire_in from user where email = '" + email + "'")
         if sql_query:
@@ -58,4 +59,5 @@ class ExpireDialog(ComponentDialog):
         await step_context.context.send_activity(MessageFactory.text(msg))
 
         mydb.close()
+        await step_context.context.send_activity(MessageFactory.text("会话已结束，感谢您的使用\n发送任意内容重新进入主菜单"))
         return await step_context.end_dialog()
