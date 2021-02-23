@@ -133,3 +133,6 @@ config.py
 
 # VSCode
 .vscode/
+
+# Log 
+logs/
