@@ -15,8 +15,9 @@ case "$1" in
     echo "OK"
 
     echo -ne "deploying venv..."
+    source $WORKSPACE/venv/bin/activate
     if [ "`$WORKSPACE/venv/bin/python -V | cut -d '.' -f 1`" != "Python 3" ];then
-        python3 -m venv $WORKSPACE/venv
+      python3 -m venv $WORKSPACE/venv
     fi
     echo "OK"
     echo -ne "checking requirements..."
@@ -28,6 +29,10 @@ case "$1" in
 
   start)
 # 启动Bot
+    if [ $IS_INSTALLED = 0 ];then
+      echo "please init first"
+      exit 1
+    fi
     source $WORKSPACE/venv/bin/activate
     echo "OK"
     mkdir -p $WORKSPACE/logs
@@ -53,7 +58,7 @@ case "$1" in
   ;;
 
   *)
-    echo "Usage: $WORKSPACE/bot.sh {start|stop|restart}"
+    echo "Usage: $WORKSPACE/bot.sh {init|start|stop|restart}"
     exit 1
     ;;
 esac
