@@ -21,7 +21,7 @@ case "$1" in
     if [ $? != 0 ];then
       exit 1
     fi
-    sed -i '/installed/s/0/1/g' $WORKSPACE/bot.conf
+    sed -i '/IS_INSTALLED/s/0/1/g' $WORKSPACE/bot.conf
   ;;
 
   start)
