@@ -1,0 +1,61 @@
+#!/bin/bash
+
+WORKSPACE=`dirname $0`
+source $WORKSPACE/bot.conf
+
+case "$1" in
+  init)
+    # 检查环境
+    echo -ne "checking python3..."
+    command -v python3 > /dev/null 2>&1 || { echo >&2 "python3 not found,now trying to install it"; sudo apt-get install python3; }
+    sudo apt-get install libxml2-dev libxslt1-dev python3-dev zlib1g-dev libevent-dev lxml
+    echo "OK"
+    echo -ne "checking python3 venv..."
+    python3 -c "import venv" > /dev/null 2>&1 || { echo >&2 "pyvenv not found,now trying to install it"; sudo apt-get install python3-venv; }
+    echo "OK"
+
+    echo -ne "deploying venv..."
+    if [ "`$WORKSPACE/venv/bin/python -V | cut -d '.' -f 1`" != "Python 3" ];then
+        python3 -m venv $WORKSPACE/venv
+    fi
+    echo "OK"
+    echo -ne "checking requirements..."
+    pip install -r $WORKSPACE/requirements.txt -q
+    echo "OK"
+    
+    sed -i '/installed/s/0/1/g' $WORKSPACE/bot.conf
+  ;;
+
+  start)
+# 启动Bot
+    source $WORKSPACE/venv/bin/activate
+    echo "OK"
+    mkdir -p $WORKSPACE/logs
+    python $WORKSPACE/app.py > $WORKSPACE/logs/app.log 2>&1 &
+    echo "bot started"
+    # 启动frp
+    ($WORKSPACE/frp/frps -c $WORKSPACE/frp/frps.ini > $WORKSPACE/logs/frps.log 2>&1 &) && ($WORKSPACE/frp/frpc -c $WORKSPACE/frp/frpc.ini > $WORKSPACE/logs/frpc.log 2>&1 &)
+    echo "frp started"
+  ;;
+
+  restart)
+    $WORKSPACE/bot.sh stop
+    $WORKSPACE/bot.sh start
+  ;;
+
+  stop)
+    echo -ne "stoping bot..."
+    ps -ef | grep "app.py" | grep -v "grep" | awk '{print $2}' | xargs -n1 kill > /dev/null 2>&1
+    echo "OK"
+    echo -ne "stoping frp..."
+    ps -ef | grep "frp" | grep -v "grep" | awk '{print $2}' | xargs -n1 kill > /dev/null 2>&1
+    echo "OK"
+  ;;
+
+  *)
+    echo "Usage: $WORKSPACE/bot.sh {start|stop|restart}"
+    exit 1
+    ;;
+esac
+
+exit 0

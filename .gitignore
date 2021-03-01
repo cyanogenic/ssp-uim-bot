@@ -130,9 +130,12 @@ dmypy.json
 
 # Config file
 config.py
+frp/frpc.ini
 
 # VSCode
 .vscode/
 
 # Log 
-logs/
+logs/app.log
+logs/frps.log
+logs/frpc.log
