@@ -5,43 +5,63 @@ source $WORKSPACE/bot.conf
 
 case "$1" in
   init)
+    sed -i '/IS_INSTALLED/s/1/0/g' $WORKSPACE/bot.conf
     # 检查环境
     echo "checking python3..."
     sudo apt-get install python3 python3-dev python3-venv
     if [ $? != 0 ];then
       exit 1
     fi
-    echo "deploying venv..."
-    python3 -m venv $WORKSPACE/venv
+    rm -rf $WORKSPACE/venv && python3 -m venv $WORKSPACE/venv
     if [ $? != 0 ];then
       exit 1
     fi
     echo "checking requirements..."
     source $WORKSPACE/venv/bin/activate
-    pip install -r $WORKSPACE/requirements.txt -q
+    pip install -r $WORKSPACE/requirements.txt
     if [ $? != 0 ];then
       exit 1
     fi
+    mkdir -p $WORKSPACE/logs
+    if [ ! -f "$WORKSPACE/config.py" ]; then
+      cp $WORKSPACE/config.py.example $WORKSPACE/config.py
+    fi
+    if [ ! -f "$WORKSPACE/frp/frpc.ini" ]; then
+      cp $WORKSPACE/frp/frpc.ini.example $WORKSPACE/frp/frpc.ini
+    fi
+    echo ""
+    echo "初始化完成，请修改$WORKSPACE/config.py和$WORKSPACE/frp/frpc.ini中的配置，然后执行bot start启动bot"
     sed -i '/IS_INSTALLED/s/0/1/g' $WORKSPACE/bot.conf
   ;;
 
   start)
 # 启动Bot
     if [ $IS_INSTALLED = 0 ];then
-      echo "please init first"
+      echo "请先执行bot init命令"
       exit 2
     fi
     source $WORKSPACE/venv/bin/activate
     if [ $? != 0 ];then
       exit 1
     fi
-    echo "OK"
-    mkdir -p $WORKSPACE/logs
     python $WORKSPACE/app.py > $WORKSPACE/logs/app.log 2>&1 &
+    if [ $? != 0 ];then
+      exit 1
+    fi
     echo "bot started"
+    sleep 2
     # 启动frp
-    ($WORKSPACE/frp/frps -c $WORKSPACE/frp/frps.ini > $WORKSPACE/logs/frps.log 2>&1 &) && ($WORKSPACE/frp/frpc -c $WORKSPACE/frp/frpc.ini > $WORKSPACE/logs/frpc.log 2>&1 &)
-    echo "frp started"
+    $WORKSPACE/frp/frps -c $WORKSPACE/frp/frps.ini > $WORKSPACE/logs/frps.log 2>&1 &
+    if [ $? != 0 ];then
+      exit 1
+    fi
+    echo "frps started"
+    sleep 2
+    $WORKSPACE/frp/frpc -c $WORKSPACE/frp/frpc.ini > $WORKSPACE/logs/frpc.log 2>&1 &
+    if [ $? != 0 ];then
+      exit 1
+    fi
+    echo "frpc started"
   ;;
 
   restart)
@@ -59,7 +79,7 @@ case "$1" in
   ;;
 
   *)
-    echo "Usage: $WORKSPACE/bot.sh {init|start|stop|restart}"
+    echo "Usage: $WORKSPACE/bot {init|start|stop|restart}"
     exit 1
     ;;
 esac
