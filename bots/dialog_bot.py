@@ -56,4 +56,4 @@ class DialogBot(ActivityHandler):
     ):
         for member in members_added:
             if member.id != turn_context.activity.recipient.id:
-                await turn_context.send_activity("Hello and welcome!")
+                await turn_context.send_activity("欢迎使用!请发送任意内容进入菜单")

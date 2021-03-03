@@ -21,10 +21,11 @@ class MainDialog(ComponentDialog):
     2.使用教程
     3.软件下载
     4.到期时间查询
-    0.人工服务
+    5.人工服务
     
     请回复对应的数字:
     '''
+
     def __init__(self, user_state: UserState):
         super(MainDialog, self).__init__(MainDialog.__name__)
 
@@ -63,5 +64,6 @@ class MainDialog(ComponentDialog):
         elif choice == "5":
             await step_context.context.send_activity(MessageFactory.text("这里是人工服务"))
 
-        await step_context.context.send_activity(MessageFactory.text("会话已结束，感谢您的使用\n发送任意内容重新进入主菜单"))
-        return await step_context.end_dialog()
+        #await step_context.context.send_activity(MessageFactory.text("会话已结束，感谢您的使用\n发送任意内容重新进入主菜单"))
+        #return await step_context.end_dialog()
+        return await step_context.replace_dialog(MainDialog.__name__)

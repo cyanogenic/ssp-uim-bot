@@ -63,40 +63,42 @@ case "$1" in
     if [ $? != 0 ];then
       exit 1
     fi
+    echo -ne "正在启动Bot..."
     nohup python $WORKSPACE/app.py > $WORKSPACE/logs/app.log 2>&1 &
     if [ $? != 0 ];then
-      echo "Bot启动失败"
+      echo "失败"
       exit 1
     fi
-    echo "Bot已启动"
+    echo "OK"
     sleep 2
     # 启动frp
+    echo -ne "正在启动frps..."
     nohup $WORKSPACE/frp/frps -c $WORKSPACE/frp/frps.ini > $WORKSPACE/logs/frps.log 2>&1 &
     if [ $? != 0 ];then
-      echo "frps启动失败"
+      echo "失败"
       exit 1
     fi
-    echo "frps已启动"
+    echo "OK"
     sleep 2
+    echo -ne "正在启动frpc..."
     nohup $WORKSPACE/frp/frpc -c $WORKSPACE/frp/frpc.ini > $WORKSPACE/logs/frpc.log 2>&1 &
     if [ $? != 0 ];then
-      echo "frpc启动失败"
+      echo "失败"
       exit 1
     fi
-    echo "frpc已启动"
-    tail $WORKSPACE/logs/*
+    echo "OK"
   ;;
 
   restart)
-    $WORKSPACE/bot.sh stop
-    $WORKSPACE/bot.sh start
+    $WORKSPACE/bot stop
+    $WORKSPACE/bot start
   ;;
 
   stop)
-    echo -ne "bot已停止"
+    echo -ne "正在停止Bot..."
     ps -ef | grep "app.py" | grep -v "grep" | awk '{print $2}' | xargs -n1 kill > /dev/null 2>&1
     echo "OK"
-    echo -ne "frp已停止"
+    echo -ne "正在停止frp..."
     ps -ef | grep "frp" | grep -v "grep" | awk '{print $2}' | xargs -n1 kill > /dev/null 2>&1
     echo "OK"
   ;;
