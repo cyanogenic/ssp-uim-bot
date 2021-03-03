@@ -131,6 +131,7 @@ dmypy.json
 # Config file
 config.py
 frp/frpc.ini
+bot.conf
 
 # VSCode
 .vscode/
