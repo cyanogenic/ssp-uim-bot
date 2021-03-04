@@ -6,7 +6,7 @@ server_port = 7000
 [bot]
 type = tcp
 local_ip = 127.0.0.1
-# local_port和config.py里的port保持一致
+# local_port和conf/config.py里的port保持一致
 local_port = 3979
 # remote_port是服务器实际对外提供访问的端口，请按照需要调整
 remote_port = 3978

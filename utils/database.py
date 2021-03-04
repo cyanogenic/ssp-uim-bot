@@ -1,5 +1,5 @@
 import mysql.connector
-from config import DataBaseConfig
+from conf.config import DataBaseConfig
 
 DBCONFIG = DataBaseConfig
 

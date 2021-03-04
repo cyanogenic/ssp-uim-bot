@@ -129,9 +129,9 @@ dmypy.json
 .pyre/
 
 # Config file
-config.py
+conf/bot.conf
+conf/config.py
 frp/frpc.ini
-bot.conf
 
 # VSCode
 .vscode/

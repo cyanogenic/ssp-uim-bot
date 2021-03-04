@@ -16,15 +16,13 @@ from botbuilder.core import (
 from botbuilder.core.integration import aiohttp_error_middleware
 from botbuilder.schema import Activity, ActivityTypes
 
-from config import DefaultConfig
+from conf.config import DefaultConfig
 from dialogs.main_dialog import MainDialog
 from bots.dialog_bot import DialogBot
 
 
 CONFIG = DefaultConfig()
 
-# Create adapter.
-# See https://aka.ms/about-bot-adapter to learn more about how bots work.
 SETTINGS = BotFrameworkAdapterSettings(CONFIG.APP_ID, CONFIG.APP_PASSWORD)
 ADAPTER = BotFrameworkAdapter(SETTINGS)
 
@@ -39,9 +37,7 @@ async def on_error(context: TurnContext, error: Exception):
 
     # Send a message to the user
     await context.send_activity("The bot encountered an error or bug.")
-    await context.send_activity(
-        "To continue to run this bot, please fix the bot source code."
-    )
+
     # Send a trace activity if we're talking to the Bot Framework Emulator
     if context.activity.channel_id == "emulator":
         # Create a trace activity that contains the error object
