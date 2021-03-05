@@ -3,10 +3,10 @@ class ConversationData:
         self,
         timestamp: str = None,
         channel_id: str = None,
-        prompted_for_user_name: bool = True,
         current_menu_level: int = 1,
+        query_lock: int = 0,
     ):
         self.timestamp = timestamp
         self.channel_id = channel_id
-        self.prompted_for_user_name = prompted_for_user_name
         self.current_menu_level = current_menu_level
+        self.query_lock = query_lock

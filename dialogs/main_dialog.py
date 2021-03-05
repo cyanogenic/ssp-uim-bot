@@ -16,16 +16,6 @@ from botbuilder.core import MessageFactory, UserState
 
 
 class MainDialog(ComponentDialog):
-    menu = '''
-    1.套餐介绍
-    2.使用教程
-    3.软件下载
-    4.到期时间查询
-    5.人工服务
-    
-    请回复对应的数字:
-    '''
-
     def __init__(self, user_state: UserState):
         super(MainDialog, self).__init__(MainDialog.__name__)
 
@@ -37,7 +27,7 @@ class MainDialog(ComponentDialog):
                 WaterfallDialog.__name__,
                 [
                     self.menu_step,
-                    self.exec_step,
+                    #self.exec_step,
                 ],
             )
         )
@@ -46,11 +36,14 @@ class MainDialog(ComponentDialog):
         self.initial_dialog_id = WaterfallDialog.__name__
 
     async def menu_step(self, step_context: WaterfallStepContext) -> DialogTurnResult:
-        return await step_context.prompt(
-            TextPrompt.__name__,
-            PromptOptions(prompt=MessageFactory.text(self.menu)),
-        )
+        # 暂时不需要主菜单，所以直接跳转到到期时间查询
+        # return await step_context.prompt(
+        #     TextPrompt.__name__,
+        #     PromptOptions(prompt=MessageFactory.text(self.menu)),
+        # )
+        return await step_context.begin_dialog(ExpireDialog.__name__)
 
+    # 暂时屏蔽
     async def exec_step(self, step_context: WaterfallStepContext) -> DialogTurnResult:
         choice = step_context.result
         if   choice == "1":

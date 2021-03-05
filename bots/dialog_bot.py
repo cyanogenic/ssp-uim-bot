@@ -1,3 +1,5 @@
+import json
+
 from botbuilder.core import ActivityHandler, ConversationState, TurnContext, UserState
 from botbuilder.dialogs import Dialog
 from botbuilder.schema import ChannelAccount
@@ -32,6 +34,8 @@ class DialogBot(ActivityHandler):
         self.user_profile_accessor = self.user_state.create_property("UserProfile")
         self.dialog = dialog
 
+        self.menu = json.load(open('conf/menu.json', 'r'))
+
     async def on_turn(self, turn_context: TurnContext):
         await super().on_turn(turn_context)
 
@@ -52,21 +56,45 @@ class DialogBot(ActivityHandler):
         )
 
         if user_profile.name is None:
-            # First time around this is undefined, so we will prompt user for name.
-            if conversation_data.prompted_for_user_name:
-                # Set the name to what the user provided.
-                user_profile.name = turn_context.activity.recipient.id
-                conversation_data.channel_id = turn_context.activity.channel_id
-                # Reset the flag to allow the bot to go though the cycle again.
-                conversation_data.prompted_for_user_name = False
-                
-        await turn_context.send_activity(
-            f"{ user_profile.name } sent: { turn_context.activity.text }"
-        )
+            # First time around this is undefined, so we will set recipient.id as username.
+            user_profile.name = turn_context.activity.recipient.id
+            conversation_data.channel_id = turn_context.activity.channel_id
 
-        #进瀑布对话
-        await DialogHelper.run_dialog(
-            self.dialog,
-            turn_context,
-            self.conversation_state.create_property("DialogState"),
-        )
+        # 进查询
+        if conversation_data.query_lock == 1:
+            # 进瀑布对话
+            await DialogHelper.run_dialog(self.dialog, turn_context, self.conversation_state.create_property("DialogState"))
+            conversation_data.query_lock = 0
+        else:
+            # 判断输入是不是数字,否则菜单层级不变
+            if turn_context.activity.text.isdigit():
+                if int(turn_context.activity.text) == 4:
+                    conversation_data.query_lock = 1
+                    # 进瀑布对话
+                    await DialogHelper.run_dialog(self.dialog, turn_context, self.conversation_state.create_property("DialogState"))
+                else:
+                    # 判断当前用户在哪一层
+                    if int(turn_context.activity.text) < 100:
+                        conversation_data.current_menu_level = 1
+                    else:
+                        conversation_data.current_menu_level = int(turn_context.activity.text) // 100 * 100
+
+                    menu_temp = await self.create_menu(conversation_data.current_menu_level)           
+                    # 发送菜单
+                    await turn_context.send_activity(menu_temp)
+
+                    await turn_context.send_activity(
+                        f"{ user_profile.name } sent: { turn_context.activity.text } current level:{ conversation_data.current_menu_level }"
+                    )
+
+    async def create_menu(self, level):
+        # 生成当前用户层级的菜单
+        menu_temp = ''
+        for key in self.menu:
+            if int(key) >= level and int(key) < level + 99:
+                menu_temp = menu_temp + "\n\n" + key + ": " + self.menu[key]
+        # 补"返回上一层"
+        if level > 1:
+            menu_temp = menu_temp + "\n\n" + "0: 返回上一层"
+        return menu_temp
+
